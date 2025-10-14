@@ -9,16 +9,12 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-app.use(cors()); // ✅ ye line express ke baad likh
-app.use(express.json());
-
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: [
-    'http://localhost:3000',
-    'https://sahaayakincrediblewebsite.netlify.app/'  // <-- yahan apna actual Netlify domain daal
+  origin: [
+    'https://sahaayakincrediblewebsite.netlify.app' // <-- add your Netlify domain (no trailing slash)
   ],
   credentials: true
 }));
