@@ -16,7 +16,10 @@ app.use(express.json());
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: '*',   // ✅ sabhi origins allowed temporarily
+    origin: [
+    'http://localhost:3000',
+    'https://sahaayakincrediblewebsite.netlify.app/'  // <-- yahan apna actual Netlify domain daal
+  ],
   credentials: true
 }));
 
