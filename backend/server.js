@@ -16,9 +16,10 @@ app.use(express.json());
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:3000', // Your React app URL
+  origin: '*',   // ✅ sabhi origins allowed temporarily
   credentials: true
 }));
+
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sahaayak', {
