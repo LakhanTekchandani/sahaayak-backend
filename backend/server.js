@@ -12,40 +12,49 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-// CORS: use a whitelist and a dynamic origin function so we can log and control access
+
+// CORS Whitelist (REMOVED trailing slash)
 const whitelist = [
   'http://localhost:3000',
-  'https://sahaayakincredible.netlify.app/'
+  'https://sahaayakincredible.netlify.app'  // ✅ No trailing slash
 ];
 
+// Logging middleware for debugging
 app.use((req, res, next) => {
-  // Helpful for debugging CORS issues from the frontend
   console.log('Incoming request origin:', req.headers.origin);
   next();
 });
 
+// CORS Configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (e.g., mobile apps, curl)
+    // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
+    
     if (whitelist.indexOf(origin) !== -1) {
+      console.log('✅ CORS: Allowed origin:', origin);
       callback(null, true);
     } else {
+      console.log('❌ CORS: Blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true
 }));
 
-// Simple health endpoint for quick reachability tests from the frontend
-app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
-
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    ok: true, 
+    timestamp: Date.now(),
+    message: 'Backend is healthy! 🚀'
+  });
+});
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sahaayak')
   .then(() => console.log('✅ MongoDB Connected Successfully'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
-
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -64,5 +73,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Allowed origins:`, whitelist);
 });
-
