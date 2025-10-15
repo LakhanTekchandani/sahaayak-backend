@@ -12,19 +12,40 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+// CORS: use a whitelist and a dynamic origin function so we can log and control access
+const whitelist = [
+  'http://localhost:3000',
+  'https://sahaayakincredible.netlify.app/'
+];
+
+app.use((req, res, next) => {
+  // Helpful for debugging CORS issues from the frontend
+  console.log('Incoming request origin:', req.headers.origin);
+  next();
+});
+
 app.use(cors({
-  origin: 'https://sahaayakwomenswebsite.netlify.app',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (e.g., mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
+// Simple health endpoint for quick reachability tests from the frontend
+app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
+
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sahaayak', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ MongoDB Connected Successfully'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/sahaayak')
+  .then(() => console.log('✅ MongoDB Connected Successfully'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
 
 // Routes
 app.use('/api/auth', authRoutes);
